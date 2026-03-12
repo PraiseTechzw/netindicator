@@ -56,7 +56,7 @@ class TrafficStatsNetworkMonitor(
      * Resets internal tracking. This handles first measurement samples, network switching
      * issues, or sudden disconnections neatly without emitting absurdly huge deltas.
      */
-    fun onNetworkChanged() {
+    override fun onNetworkChanged() {
         resetBaselines()
     }
 
