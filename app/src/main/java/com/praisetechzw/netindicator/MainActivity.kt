@@ -31,7 +31,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.praisetechzw.netindicator.navigation.NetIndicatorNavGraph
 import com.praisetechzw.netindicator.navigation.bottomNavItems
-import com.praisetechzw.netindicator.service.NetworkMonitorService
+import com.praisetechzw.netindicator.engine.service.ServiceController
 import com.praisetechzw.netindicator.ui.theme.NetIndicatorTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -43,8 +43,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
-        // The service will manage its own lifecycle once started via intent
-        NetworkMonitorService.startService(applicationContext)
+        // Start the high-performance background tracking engine
+        ServiceController(applicationContext).startMonitoring()
 
         setContent {
             NetIndicatorTheme {
