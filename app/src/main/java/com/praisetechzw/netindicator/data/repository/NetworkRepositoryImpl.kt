@@ -5,7 +5,7 @@ import com.praisetechzw.netindicator.data.local.dao.NetworkEventDao
 import com.praisetechzw.netindicator.data.local.entity.DailyUsageEntity
 import com.praisetechzw.netindicator.data.mapper.toDomain
 import com.praisetechzw.netindicator.data.mapper.toEntity
-import com.praisetechzw.netindicator.domain.model.DailyUsage
+import com.praisetechzw.netindicator.domain.model.DailyUsageSummary
 import com.praisetechzw.netindicator.domain.model.NetworkEvent
 import com.praisetechzw.netindicator.domain.model.NetworkSnapshot
 import com.praisetechzw.netindicator.domain.model.NetworkStats
@@ -30,16 +30,45 @@ class NetworkRepositoryImpl @Inject constructor(
     override fun observeRecentEvents(limit: Int): Flow<List<NetworkEvent>> =
         eventDao.getRecentEvents(limit).map { entities -> entities.map { it.toDomain() } }
 
-    override fun observeDailyUsage(days: Int): Flow<List<DailyUsage>> =
+    override fun observeDailyUsageSequence(days: Int): Flow<List<DailyUsageSummary>> =
         dailyUsageDao.getRecentDays(days).map { entities -> entities.map { it.toDomain() } }
+
+    override fun observeDailyUsage(epochDay: Long): Flow<DailyUsageSummary?> =
+        dailyUsageDao.observeForDay(epochDay).map { it?.toDomain() }
 
     override suspend fun saveSnapshot(snapshot: NetworkSnapshot) {
         eventDao.insert(snapshot.toEntity())
         updateDailySummary(snapshot)
     }
 
+    override suspend fun addUsage(wifiRx: Long, wifiTx: Long, mobileRx: Long, mobileTx: Long) {
+        val today = System.currentTimeMillis() / TimeUnit.DAYS.toMillis(1)
+        val existing = dailyUsageDao.getForDay(today)
+        val dateStr = dateFormatter.format(Date())
+
+        val updated = existing?.copy(
+            totalDownloadBytes = existing.totalDownloadBytes + wifiRx + mobileRx,
+            totalUploadBytes = existing.totalUploadBytes + wifiTx + mobileTx,
+            wifiRxBytes = existing.wifiRxBytes + wifiRx,
+            wifiTxBytes = existing.wifiTxBytes + wifiTx,
+            mobileRxBytes = existing.mobileRxBytes + mobileRx,
+            mobileTxBytes = existing.mobileTxBytes + mobileTx
+        ) ?: DailyUsageEntity(
+            dateEpochDay = today,
+            date = dateStr,
+            totalDownloadBytes = wifiRx + mobileRx,
+            totalUploadBytes = wifiTx + mobileTx,
+            wifiRxBytes = wifiRx,
+            wifiTxBytes = wifiTx,
+            mobileRxBytes = mobileRx,
+            mobileTxBytes = mobileTx
+        )
+
+        dailyUsageDao.upsert(updated)
+    }
+
     /**
-     * Upserts the daily summary for today by incrementing counters.
+     * Upserts the daily summary for today by incrementing counters for session averages.
      */
     private suspend fun updateDailySummary(snapshot: NetworkSnapshot) {
         val today = System.currentTimeMillis() / TimeUnit.DAYS.toMillis(1)
@@ -51,9 +80,8 @@ class NetworkRepositoryImpl @Inject constructor(
             val newAvgDown = ((existing.avgDownloadBps * existing.sessionCount) + (snapshot.downloadSpeedBps ?: 0)) / newCount
             val newAvgUp = ((existing.avgUploadBps * existing.sessionCount) + (snapshot.uploadSpeedBps ?: 0)) / newCount
             val newAvgPing = ((existing.avgPingMs * existing.sessionCount) + (snapshot.pingMs ?: 0)) / newCount
+            
             existing.copy(
-                totalDownloadBytes = existing.totalDownloadBytes + (snapshot.downloadSpeedBps ?: 0),
-                totalUploadBytes = existing.totalUploadBytes + (snapshot.uploadSpeedBps ?: 0),
                 avgDownloadBps = newAvgDown,
                 avgUploadBps = newAvgUp,
                 avgPingMs = newAvgPing,
@@ -63,8 +91,6 @@ class NetworkRepositoryImpl @Inject constructor(
             DailyUsageEntity(
                 dateEpochDay = today,
                 date = dateStr,
-                totalDownloadBytes = snapshot.downloadSpeedBps ?: 0,
-                totalUploadBytes = snapshot.uploadSpeedBps ?: 0,
                 avgDownloadBps = snapshot.downloadSpeedBps ?: 0,
                 avgUploadBps = snapshot.uploadSpeedBps ?: 0,
                 avgPingMs = snapshot.pingMs ?: 0,

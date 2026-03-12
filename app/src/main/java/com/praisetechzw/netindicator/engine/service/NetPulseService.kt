@@ -5,7 +5,9 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import com.praisetechzw.netindicator.domain.repository.NetworkRepository
 import com.praisetechzw.netindicator.engine.NetworkMonitor
+import com.praisetechzw.netindicator.engine.NetworkState
 import com.praisetechzw.netindicator.engine.NetworkStateDetector
 import com.praisetechzw.netindicator.engine.TrafficStatsNetworkMonitor
 import kotlinx.coroutines.CoroutineScope
@@ -37,6 +39,7 @@ class NetPulseService : Service() {
     private var uiUpdateJob: Job? = null
 
     // Component instances
+    @Inject lateinit var repository: NetworkRepository
     @Inject lateinit var networkMonitor: NetworkMonitor
     @Inject lateinit var stateDetector: NetworkStateDetector
     private lateinit var notificationManager: NetPulseNotificationManager
@@ -107,6 +110,16 @@ class NetPulseService : Service() {
             combine(networkMonitor.speedFlow, stateDetector.networkStateFlow) { speed, state ->
                 Pair(speed, state)
             }.collect { (speed, state) ->
+                
+                // Track daily usage actively using absolute bytes avoiding double counting abstracts
+                if (speed.rxDeltaBytes > 0 || speed.txDeltaBytes > 0) {
+                    if (state == NetworkState.WIFI) {
+                        repository.addUsage(speed.rxDeltaBytes, speed.txDeltaBytes, 0, 0)
+                    } else if (state == NetworkState.MOBILE_DATA) {
+                        repository.addUsage(0, 0, speed.rxDeltaBytes, speed.txDeltaBytes)
+                    }
+                }
+
                 notificationManager.updateNotification(speed, state)
             }
         }
