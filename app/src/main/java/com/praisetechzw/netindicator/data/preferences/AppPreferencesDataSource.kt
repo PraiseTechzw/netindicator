@@ -24,7 +24,8 @@ data class AppSettings(
     val showNotifications: Boolean = true,
     val pingHost: String = "8.8.8.8",
     val useMaterialYou: Boolean = true,
-    val bandwidthUnit: String = "AUTO" // AUTO, KBPS, MBPS
+    val bandwidthUnit: String = "AUTO", // AUTO, KBPS, MBPS
+    val startOnBoot: Boolean = true
 )
 
 @Singleton
@@ -40,6 +41,7 @@ class AppPreferencesDataSource @Inject constructor(
         private val KEY_PING_HOST = stringPreferencesKey("ping_host")
         private val KEY_USE_MATERIAL_YOU = booleanPreferencesKey("use_material_you")
         private val KEY_BANDWIDTH_UNIT = stringPreferencesKey("bandwidth_unit")
+        private val KEY_START_ON_BOOT = booleanPreferencesKey("start_on_boot")
     }
 
     val settingsFlow: Flow<AppSettings> = context.dataStore.data.map { prefs ->
@@ -51,7 +53,8 @@ class AppPreferencesDataSource @Inject constructor(
             showNotifications = prefs[KEY_SHOW_NOTIFICATIONS] ?: true,
             pingHost = prefs[KEY_PING_HOST] ?: "8.8.8.8",
             useMaterialYou = prefs[KEY_USE_MATERIAL_YOU] ?: true,
-            bandwidthUnit = prefs[KEY_BANDWIDTH_UNIT] ?: "AUTO"
+            bandwidthUnit = prefs[KEY_BANDWIDTH_UNIT] ?: "AUTO",
+            startOnBoot = prefs[KEY_START_ON_BOOT] ?: true
         )
     }
 
@@ -85,5 +88,9 @@ class AppPreferencesDataSource @Inject constructor(
 
     suspend fun setBandwidthUnit(unit: String) {
         context.dataStore.edit { it[KEY_BANDWIDTH_UNIT] = unit }
+    }
+
+    suspend fun setStartOnBoot(enabled: Boolean) {
+        context.dataStore.edit { it[KEY_START_ON_BOOT] = enabled }
     }
 }

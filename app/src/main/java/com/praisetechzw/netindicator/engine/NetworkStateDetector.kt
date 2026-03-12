@@ -5,6 +5,7 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -90,6 +91,22 @@ class NetworkStateDetector(private val context: Context) {
             
             else -> NetworkState.UNKNOWN
         }
-        _networkStateFlow.value = newState
+
+        val oldState = _networkStateFlow.value
+        if (oldState != newState) {
+            Log.i("NetPulse_Detector", "Network state transitioned instantly: $oldState -> $newState")
+            
+            // Log complex scenarios strictly conforming to hardware edge-cases
+            when {
+                oldState == NetworkState.DISCONNECTED && newState == NetworkState.WIFI -> Log.i("NetPulse_Detector", "Wi-Fi connected.")
+                oldState == NetworkState.WIFI && newState == NetworkState.DISCONNECTED -> Log.i("NetPulse_Detector", "Wi-Fi disconnected.")
+                oldState == NetworkState.DISCONNECTED && newState == NetworkState.MOBILE_DATA -> Log.i("NetPulse_Detector", "Mobile Data enabled.")
+                oldState == NetworkState.MOBILE_DATA && newState == NetworkState.DISCONNECTED -> Log.i("NetPulse_Detector", "Mobile Data disabled.")
+                oldState == NetworkState.WIFI && newState == NetworkState.MOBILE_DATA -> Log.i("NetPulse_Detector", "Switched from Wi-Fi to Mobile Data.")
+                oldState == NetworkState.MOBILE_DATA && newState == NetworkState.WIFI -> Log.i("NetPulse_Detector", "Switched from Mobile Data to Wi-Fi bounds.")
+            }
+
+            _networkStateFlow.value = newState
+        }
     }
 }
