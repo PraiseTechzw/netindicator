@@ -43,12 +43,16 @@ data class NetworkEvent(
 )
 
 /**
- * Aggregated daily usage stats.
+ * Aggregated daily usage stats tracking precise boundaries across network interfaces.
  */
-data class DailyUsage(
+data class DailyUsageSummary(
     val date: String,
     val totalDownloadBytes: Long,
     val totalUploadBytes: Long,
+    val wifiRxBytes: Long,
+    val wifiTxBytes: Long,
+    val mobileRxBytes: Long,
+    val mobileTxBytes: Long,
     val avgPingMs: Long,
     val avgDownloadBps: Long,
     val avgUploadBps: Long,

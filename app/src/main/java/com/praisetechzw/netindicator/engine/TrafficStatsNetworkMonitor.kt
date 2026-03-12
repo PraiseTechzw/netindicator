@@ -112,7 +112,9 @@ class TrafficStatsNetworkMonitor(
         _speedFlow.value = NetworkSpeed(
             downloadBytesPerSec = downloadBps,
             uploadBytesPerSec = uploadBps,
-            totalBytesPerSec = downloadBps + uploadBps
+            totalBytesPerSec = downloadBps + uploadBps,
+            rxDeltaBytes = rxDelta,
+            txDeltaBytes = txDelta
         )
     }
 }

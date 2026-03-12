@@ -6,7 +6,9 @@ package com.praisetechzw.netindicator.engine
 data class NetworkSpeed(
     val downloadBytesPerSec: Long,
     val uploadBytesPerSec: Long,
-    val totalBytesPerSec: Long
+    val totalBytesPerSec: Long,
+    val rxDeltaBytes: Long = 0,
+    val txDeltaBytes: Long = 0
 )
 
 /**

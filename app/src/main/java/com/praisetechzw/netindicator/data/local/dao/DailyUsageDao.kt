@@ -19,6 +19,9 @@ interface DailyUsageDao {
     @Query("SELECT * FROM daily_usage WHERE dateEpochDay = :day")
     suspend fun getForDay(day: Long): DailyUsageEntity?
 
+    @Query("SELECT * FROM daily_usage WHERE dateEpochDay = :day")
+    fun observeForDay(day: Long): Flow<DailyUsageEntity?>
+
     @Query("DELETE FROM daily_usage WHERE dateEpochDay < :olderThanDay")
     suspend fun deleteOlderThan(olderThanDay: Long)
 

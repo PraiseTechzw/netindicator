@@ -13,6 +13,10 @@ data class DailyUsageEntity(
     val date: String,                    // "yyyy-MM-dd" for display
     val totalDownloadBytes: Long = 0,
     val totalUploadBytes: Long = 0,
+    val wifiRxBytes: Long = 0,
+    val wifiTxBytes: Long = 0,
+    val mobileRxBytes: Long = 0,
+    val mobileTxBytes: Long = 0,
     val avgPingMs: Long = 0,
     val avgDownloadBps: Long = 0,
     val avgUploadBps: Long = 0,

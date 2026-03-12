@@ -2,7 +2,7 @@ package com.praisetechzw.netindicator.data.mapper
 
 import com.praisetechzw.netindicator.data.local.entity.DailyUsageEntity
 import com.praisetechzw.netindicator.data.local.entity.NetworkEventEntity
-import com.praisetechzw.netindicator.domain.model.DailyUsage
+import com.praisetechzw.netindicator.domain.model.DailyUsageSummary
 import com.praisetechzw.netindicator.domain.model.NetworkEvent
 import com.praisetechzw.netindicator.domain.model.NetworkSnapshot
 import com.praisetechzw.netindicator.domain.model.NetworkType
@@ -36,10 +36,14 @@ fun NetworkSnapshot.toEntity(): NetworkEventEntity = NetworkEventEntity(
     linkSpeedMbps = linkSpeedMbps
 )
 
-fun DailyUsageEntity.toDomain(): DailyUsage = DailyUsage(
+fun DailyUsageEntity.toDomain(): DailyUsageSummary = DailyUsageSummary(
     date = date,
     totalDownloadBytes = totalDownloadBytes,
     totalUploadBytes = totalUploadBytes,
+    wifiRxBytes = wifiRxBytes,
+    wifiTxBytes = wifiTxBytes,
+    mobileRxBytes = mobileRxBytes,
+    mobileTxBytes = mobileTxBytes,
     avgPingMs = avgPingMs,
     avgDownloadBps = avgDownloadBps,
     avgUploadBps = avgUploadBps,
