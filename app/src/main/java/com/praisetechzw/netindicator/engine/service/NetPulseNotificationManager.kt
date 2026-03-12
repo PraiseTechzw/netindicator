@@ -8,6 +8,12 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Typeface
+import androidx.core.graphics.drawable.IconCompat
 import com.praisetechzw.netindicator.MainActivity
 import com.praisetechzw.netindicator.R
 import com.praisetechzw.netindicator.engine.NetworkSpeed
@@ -56,7 +62,7 @@ init {
  * a Foreground Service before the first speed metric is calculated.
  */
 fun buildInitialNotification(): Notification {
-    return buildBaseNotification("Initializing Monitor…", "Waiting for network data")
+    return buildBaseNotification("Initializing Monitor…", "Waiting for network data", "0 B/s")
 }
 
 /**
@@ -67,15 +73,16 @@ fun updateNotification(speed: NetworkSpeed, state: NetworkState) {
     if (state == NetworkState.DISCONNECTED && hideWhenDisconnected) {
         // In a true foreground service, you CANNOT completely hide the notification.
         // The best approach is to show a minimal, silent disconnected state.
-        val notif = buildBaseNotification("NetPulse", "Disconnected")
+        val notif = buildBaseNotification("NetPulse", "Disconnected", null)
         notificationManager.notify(NetPulseService.NOTIFICATION_ID, notif)
         return
     }
 
     val title = formatTitle(state, speed)
     val content = formatContent(speed, state)
+    val iconSpeed = SpeedFormatter.formatSpeed(speed.totalBytesPerSec)
 
-    val notification = buildBaseNotification(title, content)
+    val notification = buildBaseNotification(title, content, iconSpeed)
     notificationManager.notify(NetPulseService.NOTIFICATION_ID, notification)
 }
 
@@ -118,16 +125,53 @@ private fun formatContent(speed: NetworkSpeed, state: NetworkState): String {
 /**
  * Constructs the core immutable properties of the notification preventing boilerplate.
  */
-private fun buildBaseNotification(title: String, content: String): Notification {
-    return NotificationCompat.Builder(context, NetPulseService.CHANNEL_ID)
+private fun buildBaseNotification(title: String, content: String, speedForIcon: String?): Notification {
+    val builder = NotificationCompat.Builder(context, NetPulseService.CHANNEL_ID)
         .setContentTitle(title)
         .setContentText(content)
-        .setSmallIcon(R.drawable.ic_network_monitor)
         .setContentIntent(pendingIntent)
         .setPriority(NotificationCompat.PRIORITY_LOW) // Important: Prevents sound/vibration spam
         .setOngoing(true)
         .setOnlyAlertOnce(true) // Crucial for frequent updates
-        .build()
+        
+    if (speedForIcon != null) {
+        builder.setSmallIcon(generateSpeedIcon(speedForIcon))
+    } else {
+        builder.setSmallIcon(R.drawable.ic_network_monitor)
+    }
+    
+    return builder.build()
+}
+
+/**
+ * Draws the bandwidth speed straight onto a custom Bitmap avoiding static XML limitations.
+ * Maps text precisely onto a standard 96x96 bounds matching Android OS icon sizing organically
+ */
+private fun generateSpeedIcon(speedText: String): IconCompat {
+    val bitmap = Bitmap.createBitmap(96, 96, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.SUBPIXEL_TEXT_FLAG).apply {
+        color = Color.WHITE 
+        textAlign = Paint.Align.CENTER
+        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+    }
+
+    val parts = speedText.split(" ")
+    if (parts.size >= 2) {
+        val value = parts[0]
+        val unit = parts[1].replace("/s", "") // Removing `/s` limits text bleeding off edge
+        
+        paint.textSize = 46f
+        canvas.drawText(value, 48f, 44f, paint)
+        
+        paint.textSize = 34f
+        canvas.drawText(unit, 48f, 84f, paint)
+    } else {
+        paint.textSize = 38f
+        canvas.drawText(speedText, 48f, 60f, paint)
+    }
+
+    return IconCompat.createWithBitmap(bitmap)
 }
 
 private fun createChannel() {
