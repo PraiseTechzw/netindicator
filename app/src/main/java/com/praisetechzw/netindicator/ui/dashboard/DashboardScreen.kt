@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -290,7 +291,7 @@ private fun DailyUsageCard(usagePattern: DailyUsageSummary?) {
             }
             
             val mappedPayload = if (usagePattern == null) "0 B" 
-                else FormatUtils.formatBytes(usagePattern.totalRxBytes + usagePattern.totalTxBytes)
+                else FormatUtils.formatBytes(usagePattern.totalDownloadBytes + usagePattern.totalUploadBytes)
 
             Text(
                 text = mappedPayload,
@@ -302,10 +303,7 @@ private fun DailyUsageCard(usagePattern: DailyUsageSummary?) {
     }
 }
 
-// Ensure Spacer width gets imported cleanly
-@Composable
-private fun Spacer.Companion.width(width: androidx.compose.ui.unit.Dp): Modifier =
-    Modifier.padding(end = width)
+// Properly imported the width modifier
 
     
 @Composable
