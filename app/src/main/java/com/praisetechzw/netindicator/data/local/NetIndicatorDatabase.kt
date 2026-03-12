@@ -9,7 +9,7 @@ import com.praisetechzw.netindicator.data.local.entity.NetworkEventEntity
 
 @Database(
     entities = [NetworkEventEntity::class, DailyUsageEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class NetIndicatorDatabase : RoomDatabase() {
