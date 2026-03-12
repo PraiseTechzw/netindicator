@@ -28,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun SettingsScreen(
+    onNavigateToDiagnostics: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -90,6 +91,28 @@ fun SettingsScreen(
             checked = settings.showNotifications,
             onCheckedChange = { viewModel.setShowNotifications(it) }
         )
+
+        SettingSwitch(
+            title = "Start on Boot",
+            description = "Automatically start background service when device boots up",
+            checked = settings.startOnBoot,
+            onCheckedChange = { viewModel.setStartOnBoot(it) }
+        )
+
+        Divider(color = MaterialTheme.colorScheme.surfaceVariant)
+
+        SectionTitle("System")
+
+        Button(
+            onClick = { onNavigateToDiagnostics() },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "System Diagnostics")
+        }
 
         Divider(color = MaterialTheme.colorScheme.surfaceVariant)
 

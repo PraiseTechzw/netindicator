@@ -26,6 +26,7 @@ class SettingsViewModel @Inject constructor(
     fun setDarkTheme(enabled: Boolean) = viewModelScope.launch { prefs.setDarkTheme(enabled) }
     fun setDynamicColors(enabled: Boolean) = viewModelScope.launch { prefs.setDynamicColors(enabled) }
     fun setShowNotifications(enabled: Boolean) = viewModelScope.launch { prefs.setShowNotifications(enabled) }
+    fun setStartOnBoot(enabled: Boolean) = viewModelScope.launch { prefs.setStartOnBoot(enabled) }
     fun setPingHost(host: String) = viewModelScope.launch { prefs.setPingHost(host) }
     fun setBandwidthUnit(unit: String) = viewModelScope.launch { prefs.setBandwidthUnit(unit) }
 
