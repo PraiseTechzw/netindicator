@@ -25,7 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.praisetechzw.netindicator.domain.model.DailyUsage
+import com.praisetechzw.netindicator.domain.model.DailyUsageSummary
 import com.praisetechzw.netindicator.domain.model.NetworkStats
 import com.praisetechzw.netindicator.utils.FormatUtils
 
@@ -137,7 +137,7 @@ private fun StatItem(label: String, value: String, color: Color) {
 }
 
 @Composable
-private fun DailyUsageRow(usage: DailyUsage) {
+private fun DailyUsageRow(usage: DailyUsageSummary) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)

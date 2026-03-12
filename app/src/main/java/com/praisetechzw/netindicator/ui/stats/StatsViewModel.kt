@@ -2,7 +2,7 @@ package com.praisetechzw.netindicator.ui.stats
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.praisetechzw.netindicator.domain.model.DailyUsage
+import com.praisetechzw.netindicator.domain.model.DailyUsageSummary
 import com.praisetechzw.netindicator.domain.model.NetworkStats
 import com.praisetechzw.netindicator.domain.repository.NetworkRepository
 import com.praisetechzw.netindicator.domain.usecase.GetNetworkStatsUseCase
@@ -29,8 +29,8 @@ class StatsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(StatsUiState(isLoading = true))
     val uiState: StateFlow<StatsUiState> = _uiState.asStateFlow()
 
-    val dailyUsage: StateFlow<List<DailyUsage>> =
-        repository.observeDailyUsage(14)
+    val dailyUsage: StateFlow<List<DailyUsageSummary>> =
+        repository.observeDailyUsageSequence(14)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     init {

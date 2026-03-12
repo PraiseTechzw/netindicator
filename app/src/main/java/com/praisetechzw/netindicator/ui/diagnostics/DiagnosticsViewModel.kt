@@ -9,11 +9,13 @@ import android.os.PowerManager
 import android.provider.Settings
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.praisetechzw.netindicator.engine.NetworkState
 import com.praisetechzw.netindicator.engine.NetworkStateDetector
 import com.praisetechzw.netindicator.engine.service.ServiceController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
@@ -39,7 +41,7 @@ class DiagnosticsViewModel @Inject constructor(
 
     init {
         // Collect dynamic state streams natively
-        kotlinx.coroutines.GlobalScope.launch {
+        viewModelScope.launch {
             kotlinx.coroutines.flow.combine(
                 stateDetector.networkStateFlow,
                 ServiceController.isRunning
